@@ -7,6 +7,7 @@ import {ERoute} from "../../shared/enums/ERoute";
 import GroupPage from "../../pages/groupPage";
 import GroupViewPage from "../../pages/groupViewPage";
 import SettingsPage from "../../pages/settingsPage";
+import TestPage from "../../pages/testPage";
 
 function App() {
     return (
@@ -22,10 +23,11 @@ function App() {
                         <Route path=":groupId/view" element={<GroupViewPage/>}/>
                     </Route>
                     <Route path={ERoute.Settings} element={<SettingsPage/>}/>
+                    <Route path={ERoute.Test} element={<TestPage/>}/>
                 </Route>
             </Routes>
         </BrowserRouter>
     );
 }
 
-export default App;
+export default App

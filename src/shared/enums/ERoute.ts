@@ -3,4 +3,5 @@ export enum ERoute {
     Settings = 'settings',
     Translation = 'translation',
     Group = 'group',
+    Test = 'test',
 }

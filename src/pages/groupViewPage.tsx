@@ -1,29 +1,28 @@
 import React, {useEffect, useState} from "react";
 
-import Modal from "../components/Modal";
 import {useParams} from "react-router-dom";
 import {TranslationModel} from "../shared/models/TranslationModel";
 import {translationTable} from "../services/StorageService/translationTable";
 import {translationToGroupTable, TTranslationToGroupTable} from "../services/StorageService/translationToGroupTable";
+import ModalAddTranslationFromList from "./_group/ModalAddTranslationFromList";
+import ModalAddTranslationNew from "./_group/ModalAddTranslationNew";
 
-type TDataType = TTranslationToGroupTable & { translation: TranslationModel }
-const selectedDefault = ['']
+export type TDataType = TTranslationToGroupTable & { translation: TranslationModel }
 const GroupViewPage = () => {
 
     const {groupId} = useParams();
 
     const [data, setData] = useState<TDataType[]>([])
-    const [open, setOpen] = useState(false)
-    const [selected, setSelected] = useState(selectedDefault)
+    const [isNew, setIsNew] = useState(false)
+    const [isOpen, setIsOpen] = useState(false)
 
-    const translationList = translationTable.getAll()
 
     const fetch = () => {
         const translationToGroupList = translationToGroupTable.getAll({query: {groupId: Number(groupId)}})
         const temp = translationToGroupList.map(item => {
-            return {...item, translation: translationList.find(e => e.ID === item.translationId)}
+            const translation = translationTable.getById(item.translationId)
+            return {...item, translation}
         })
-        // @ts-ignore
         setData(temp)
     }
 
@@ -32,21 +31,6 @@ const GroupViewPage = () => {
     }, [])
 
 
-    const submitFormHandle = () => {
-        if (selected.some(e => e === '')) {
-            alert('Bad option')
-        }
-        selected.forEach(e => {
-            const newItem = {groupId: Number(groupId), translationId: +e}
-            const exist = !!translationToGroupTable.getAll({query: newItem}).length
-            if (!exist) {
-                translationToGroupTable.add(newItem)
-            }
-        })
-        fetch()
-        setOpen(false)
-        setSelected(selectedDefault)
-    }
     const removeHandler = (translationToGroupId: number) => () => {
         const isConfirmed = confirm('Remove translation from this Group?')
         if (isConfirmed) {
@@ -55,42 +39,45 @@ const GroupViewPage = () => {
         }
     }
 
-    const closeModalHandler = () => {
-        setOpen(false)
-        setSelected(selectedDefault)
+    const modalFromListSubmitHandler = () => {
+        fetch()
+        setIsOpen(false)
     }
+    const modalFromListCloseHandler = () => {
+        setIsOpen(false)
+    }
+
     return (
         <div>
             <h2>Group View Page</h2>
             <h3>Translations ({data.length})</h3>
+            <label>
+                is New
+                <input type="checkbox" checked={!isNew} onChange={() => {
+                    setIsNew(prevState => !prevState)
+                }}/>
+            </label>
             <button onClick={() => {
-                setOpen(true)
+                setIsOpen(true)
             }}>Add
             </button>
-            <Modal open={open} onClose={closeModalHandler}>
-                <select
-                    multiple
-                    value={selected}
-                    onChange={(e) => {
-                        const selectedOptions = Array.from(e.target.selectedOptions).map(e => e.value)
-                        if (selectedOptions.some(e => e === '')) {
-                            setSelected(selectedDefault)
-                        } else {
-                            setSelected(selectedOptions)
-                        }
-                    }}
-                >
-                    <option value="">-- Select --</option>
-                    {translationList.map(translation => <option
-                        key={translation.ID}
-                        value={translation.ID}
-                        disabled={data.some(e => e.translationId === translation.ID)
-                        }>
-                        {translation.source} - [{translation.transcription}] - {translation.translation}
-                    </option>)}
-                </select>
-                <button onClick={submitFormHandle}>Submit</button>
-            </Modal>
+            {
+                isNew
+                    ? <ModalAddTranslationFromList
+                        open={isOpen}
+                        groupId={Number(groupId)}
+                        translationList={data}
+                        onSubmit={modalFromListSubmitHandler}
+                        onClose={modalFromListCloseHandler}
+                    />
+                    : <ModalAddTranslationNew
+                        open={isOpen}
+                        groupId={Number(groupId)}
+                        onSubmit={modalFromListSubmitHandler}
+                        onClose={modalFromListCloseHandler}
+                    />
+            }
+
             <ul>
                 {data.map(e => {
                     return (<li key={e.ID}>
