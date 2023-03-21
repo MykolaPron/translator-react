@@ -13,4 +13,8 @@ export const CPages = [
         name: 'Group',
         link: ERoute.Group
     },
+    {
+        name: 'Settings',
+        link: ERoute.Settings
+    },
 ]

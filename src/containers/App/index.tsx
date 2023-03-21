@@ -7,6 +7,7 @@ import {ERoute} from "../../shared/enums/ERoute";
 import GroupPage from "../../pages/groupPage";
 import {storageInit} from "../../services/StorageService";
 import GroupViewPage from "../../pages/groupViewPage";
+import SettingsPage from "../../pages/settingsPage";
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
                         <Route index element={<GroupPage/>} />
                         <Route path=":groupId/view" element={<GroupViewPage/>} />
                     </Route>
+                    <Route path={ERoute.Settings} element={<SettingsPage/>}/>
                 </Route>
             </Routes>
         </BrowserRouter>
