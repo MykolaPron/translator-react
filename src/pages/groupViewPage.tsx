@@ -6,11 +6,13 @@ import {translationTable} from "../services/StorageService/translationTable";
 import {translationToGroupTable, TTranslationToGroupTable} from "../services/StorageService/translationToGroupTable";
 import ModalAddTranslationFromList from "./_group/ModalAddTranslationFromList";
 import ModalAddTranslationNew from "./_group/ModalAddTranslationNew";
+import {groupTable} from "../services/StorageService/groupTable";
 
 export type TDataType = TTranslationToGroupTable & { translation: TranslationModel }
 const GroupViewPage = () => {
 
     const {groupId} = useParams();
+    const group = groupTable.getById(Number(groupId))
 
     const [data, setData] = useState<TDataType[]>([])
     const [isNew, setIsNew] = useState(false)
@@ -49,7 +51,8 @@ const GroupViewPage = () => {
 
     return (
         <div>
-            <h2>Group View Page</h2>
+            <h2>Group View Page ({group.name})</h2>
+            <p>{group.description}</p>
             <h3>Translations ({data.length})</h3>
             <label>
                 is New
@@ -78,14 +81,14 @@ const GroupViewPage = () => {
                     />
             }
 
-            <ul>
-                {data.map(e => {
+            <ul>{
+                [...data].reverse().map(e => {
                     return (<li key={e.ID}>
                         {e.translation.source} - [{e.translation.transcription}] - {e.translation.translation}
                         <button onClick={removeHandler(e.ID)}>Remove</button>
                     </li>)
-                })}
-            </ul>
+                })
+            }</ul>
         </div>
     )
 }

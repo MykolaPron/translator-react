@@ -32,13 +32,13 @@ export class DBTable<T> {
     }
 
     add<T>(data: T) {
-        const recordId = lib.insert(this.name, data);
+        const recordId: number = lib.insert(this.name, data);
         lib.commit();
         return recordId
     }
 
-    updateById<T>(id: number, data: T) {
-        lib.update(this.name, {ID: id}, (row: any) => {
+    updateById<D>(id: number, data: D) {
+        lib.update(this.name, {ID: id}, (row: T) => {
             return {...row, ...data};
         })
         lib.commit();

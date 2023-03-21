@@ -5,7 +5,7 @@ import {EStorageTable} from "../../shared/enums/EStorageTable";
 import {translationToGroupTable} from "./translationToGroupTable";
 
 export type TGroupTable = StorageRecordModel & GroupModel
-export const groupTable = new DBTable<TGroupTable>(EStorageTable.Group,  ["name"])
+export const groupTable = new DBTable<TGroupTable>(EStorageTable.Group,  ["name", "description"])
 
 groupTable.beforeDelete = function (){
     const children = translationToGroupTable.getAll({query:{groupId: this.id}})

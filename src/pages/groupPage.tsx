@@ -1,14 +1,20 @@
 import React, {useEffect, useState} from "react";
 import Modal from "../components/Modal";
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 import {groupTable, TGroupTable} from "../services/StorageService/groupTable";
+import {GroupModel} from "../shared/models/GroupModel";
+
+const initialGroupData = {
+    name: '',
+    description: ''
+}
 
 const GroupPage = () => {
     const [edit, setEdit] = useState(0)
 
     const [open, setOpen] = useState(false)
     const [data, setData] = useState<TGroupTable[]>([])
-    const [group, setGroup] = useState('')
+    const [group, setGroup] = useState<GroupModel>(initialGroupData)
 
     const fetchData = () => {
         const res = groupTable.getAll()
@@ -26,7 +32,7 @@ const GroupPage = () => {
         const isConfirmed = confirm('Data is not stored. Are you sure you want to close the window?')
         if (isConfirmed) {
             setOpen(false)
-            setGroup('')
+            setGroup(initialGroupData)
         }
     }
     const submitFormHandle = () => {
@@ -35,19 +41,19 @@ const GroupPage = () => {
 
         if (edit) {
             // edit
-            groupTable.updateById(edit, {name: group})
+            groupTable.updateById(edit, group)
         } else {
             //create
-            groupTable.add({name: group})
+            groupTable.add(group)
         }
         fetchData()
         setOpen(false)
         setEdit(0)
-        setGroup('')
+        setGroup(initialGroupData)
     }
     const editHandle = (id: number) => () => {
-        const {name} = groupTable.getById(id)
-        setGroup(name)
+        const {name, description} = groupTable.getById(id)
+        setGroup({name, description})
         setEdit(id)
         setOpen(true)
     }
@@ -65,24 +71,37 @@ const GroupPage = () => {
             <button onClick={openModalCreateHandler}>Create</button>
             <Modal open={open} onClose={closeModalHandle}>
                 <div>
-                    <label htmlFor="groupName">Name</label>
-                    <input id="groupName" type="text" value={group} onChange={(e) => {
-                        setGroup(e.target.value)
-                    }}/>
+                    <label>Name
+                        <input type="text" value={group.name} onChange={(e) => {
+                            setGroup(prevState => ({...prevState, name: e.target.value}))
+                        }}/>
+                    </label>
+                    <label>Description
+                        <textarea onChange={(e) => {
+                            setGroup(prevState => ({...prevState, description: e.target.value}))
+                        }}>
+                            {group.description}
+                        </textarea>
+
+                    </label>
                 </div>
                 <button onClick={submitFormHandle}>Submit</button>
             </Modal>
             <ul>
                 {
-                    data.map((e) => <li
+                    [...data].reverse().map((e) => <li
                         key={e.ID}
-                        style={{display: 'flex', gap: '1rem'}}
+                        // style={{display: 'flex', gap: '1rem'}}
                     >
-                        <Link to={`${e.ID}/view`} state={12}>
-                            {e.name}
+                        <div>
+                        {e.name}
+                        <Link to={`${e.ID}/view`}>
+                            <button>View</button>
                         </Link>
                         <button onClick={editHandle(e.ID)}>Edit</button>
                         <button onClick={deleteHandle(e.ID)}>Delete</button>
+                        </div>
+                        <div>{e.description}</div>
                     </li>)
                 }
             </ul>

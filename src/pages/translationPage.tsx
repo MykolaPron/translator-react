@@ -87,7 +87,7 @@ const TranslationPage = () => {
             </Modal>
             <ul>
                 {
-                    data.map((e) => <li
+                    [...data].reverse().map((e) => <li
                         key={e.ID}
                         style={{display: 'flex', gap: '1rem'}}
                     >
