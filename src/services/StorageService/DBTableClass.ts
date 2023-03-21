@@ -1,6 +1,4 @@
-const localStorageDB = require('localstoragedb');
-
-const lib = new localStorageDB("translator", 'localStorage');
+import {lib} from "../../index";
 type queryOptions = {
     query?: { [T: string]: any }; // - query is either an object literal or null. If query is not supplied, all rows are returned
     limit?: number; // - limit is the maximum number of rows to be returned
@@ -8,7 +6,6 @@ type queryOptions = {
     sort?: { [T: string]: any }[]; // - sort is an array of sort conditions, each one of which is an array in itself with two values
     distinct?: string[]; // - distinct is an array of fields whose values have to be unique in the returned rows
 }
-
 export class DBTable<T> {
     private readonly name: string;
     private readonly fields: string[];

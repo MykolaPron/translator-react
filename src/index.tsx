@@ -2,6 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './containers/App';
 import reportWebVitals from './reportWebVitals';
+import {storageInit} from "./services/StorageService";
+
+const localStorageDB = require('localstoragedb');
+export const lib = new localStorageDB("translator", 'localStorage');
+storageInit()
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
