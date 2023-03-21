@@ -7,7 +7,9 @@ type TFileSaverProps = { content: string, filename?: string, contentType?: strin
 
 export function fileSaver({content, filename, contentType}: TFileSaverProps) {
     if (!contentType) contentType = 'application/octet-stream';
-    if (!filename) filename = 'translationDb.json';
+    if (!filename) {
+        filename = `translationDb${Date.now()}.json`;
+    }
 
     const a = document.createElement('a');
     const blob = new Blob([content], {'type': contentType});
