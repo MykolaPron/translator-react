@@ -1,11 +1,13 @@
 import React, {useCallback, useRef, useState} from "react";
-import {translationTable, TTranslationTable} from "../services/StorageService/translationTable";
-import {debounce, isLatinString} from "../shared/utills";
-import Modal from "../components/Modal";
-import TranslationInputs, {initialData} from "../components/TranslationInputs";
-import GroupSelect from "../components/GroupSelect";
-import {translationToGroupTable} from "../services/StorageService/translationToGroupTable";
-import {TranslationToGroupModel} from "../shared/models/GroupModel";
+import {translationTable, TTranslationTable} from "../../services/StorageService/translationTable";
+import {debounce, isLatinString} from "../../shared/utills";
+import Modal from "../../components/Modal";
+import TranslationInputs, {initialData} from "../../components/TranslationInputs";
+import GroupSelect from "../../components/GroupSelect";
+import {translationToGroupTable} from "../../services/StorageService/translationToGroupTable";
+import {TranslationToGroupModel} from "../../shared/models/GroupModel";
+
+import s from './mainPage.module.css'
 
 const MainPage = () => {
     const translationRef = useRef<HTMLDivElement>(null)
@@ -46,7 +48,7 @@ const MainPage = () => {
     const ukLabel = !isLatin ? selectedLangStyle : {}
 
     const getContent = (str: string) => {
-        const doc = `<span style="color: red;text-decoration: underline;">${searchInTranslation}</span>`
+        const doc = `<span class="${s.selectedWords}">${searchInTranslation}</span>`
 
         if (searchInTranslation === '') {
             return str
