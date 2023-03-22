@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useRef} from "react";
 import BaseInput from "./BaseInput";
 import {TranslationModel} from "../../shared/models/TranslationModel";
 import {isLatinString} from "../../shared/utills";
@@ -9,6 +9,12 @@ interface ITranslationInputsProps {
     onChange?: (state: TranslationModel) => void
 }
 
+export const initialData = {
+    source: '',
+    transcription: '',
+    translation: ''
+}
+
 const processStr = '...'
 
 const TranslationInputs: React.FC<ITranslationInputsProps> = ({initialState, onChange}) => {
@@ -17,6 +23,23 @@ const TranslationInputs: React.FC<ITranslationInputsProps> = ({initialState, onC
     const [source, setSource] = React.useState('');
     const [transcription, setTranscription] = React.useState( '');
     const [translation, setTranslation] = React.useState( '');
+
+    const sourceInputRef = useRef<HTMLInputElement>(null)
+    const sourceBtnRef = useRef<HTMLButtonElement>(null)
+    const translationBtnRef = useRef<HTMLButtonElement>(null)
+
+    useEffect(()=>{
+        if(sourceInputRef.current && sourceBtnRef.current && translationBtnRef.current){
+            if(source === '' && translation === ''){
+                sourceInputRef.current.focus()
+            } else if(source !== '' && translation === ''){
+                sourceBtnRef.current.focus()
+            } else if(source === '' && translation !== ''){
+                translationBtnRef.current.focus()
+            }
+        }
+
+    })
 
     useEffect(() => {
         if(initialState){
@@ -62,7 +85,6 @@ const TranslationInputs: React.FC<ITranslationInputsProps> = ({initialState, onC
     }
 
     React.useEffect(() => {
-
         if (translation !== '' && source === '') {
             getTranslation(translation, {from: 'uk', to: 'en'}).then(res => {
                 setSource(res)
@@ -85,7 +107,7 @@ const TranslationInputs: React.FC<ITranslationInputsProps> = ({initialState, onC
                 }
             })
         }
-    }, [])
+    },[])
 
     const inSearchProcess = () => {
         return source === processStr || transcription === processStr || translation === processStr
@@ -102,6 +124,7 @@ const TranslationInputs: React.FC<ITranslationInputsProps> = ({initialState, onC
         <div>
             <div>
                 <BaseInput
+                    ref={sourceInputRef}
                     label="Source"
                     value={source}
                     onChange={e => {
@@ -109,7 +132,7 @@ const TranslationInputs: React.FC<ITranslationInputsProps> = ({initialState, onC
                         setSource(e.target.value)
                     }}
                 />
-                <button onClick={sourceSearchHandler}>Search</button>
+                <button onClick={sourceSearchHandler} ref={sourceBtnRef}>Search</button>
                 (EN)
             </div>
             <div>
@@ -132,7 +155,7 @@ const TranslationInputs: React.FC<ITranslationInputsProps> = ({initialState, onC
                         setTranslation(e.target.value)
                     }}
                 />
-                <button onClick={translationSearchHandler}>Search</button>
+                <button onClick={translationSearchHandler} ref={translationBtnRef}>Search</button>
                 (UK)
             </div>
         </div>

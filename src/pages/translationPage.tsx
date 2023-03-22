@@ -2,18 +2,13 @@ import React, {useEffect, useState} from "react";
 
 import {TranslationModel} from "../shared/models/TranslationModel";
 import Modal from "../components/Modal";
-import TranslationInputs from "../components/TranslationInputs";
+import TranslationInputs, {initialData} from "../components/TranslationInputs";
 import {translationTable, TTranslationTable} from "../services/StorageService/translationTable";
 
-const initialNewItemData = {
-    source: '',
-    transcription: '',
-    translation: ''
-}
 const TranslationPage = () => {
     const [edit, setEdit] = useState(0)
     const [open, setOpen] = useState(false)
-    const [newItem, setNewItem] = useState<TranslationModel>(initialNewItemData)
+    const [newItem, setNewItem] = useState<TranslationModel>(initialData)
     const [data, setData] = useState<TTranslationTable[]>([])
 
     const fetchData = () => {
@@ -43,7 +38,7 @@ const TranslationPage = () => {
         const isConfirmed = confirm('Data is not stored. Are you sure you want to close the window?')
         if (isConfirmed) {
             setOpen(false)
-            setNewItem(initialNewItemData)
+            setNewItem(initialData)
         }
     }
 
@@ -62,14 +57,14 @@ const TranslationPage = () => {
             translationTable.add(newItem)
         }
 
-        setNewItem(initialNewItemData)
+        setNewItem(initialData)
         fetchData()
         setOpen(false)
         setEdit(0)
     }
 
     const openModalCreateHandler = () => {
-        setNewItem(initialNewItemData)
+        setNewItem(initialData)
         setEdit(0)
         setOpen(true)
     }

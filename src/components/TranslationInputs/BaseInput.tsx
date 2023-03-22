@@ -1,4 +1,4 @@
-import React from "react";
+import React, {forwardRef} from "react";
 
 interface IBaseInputProps {
     label: string
@@ -6,7 +6,7 @@ interface IBaseInputProps {
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-const BaseInput:React.FC<IBaseInputProps> = (props) => {
+const BaseInput = forwardRef<HTMLInputElement, IBaseInputProps>((props, ref) => {
     const elId = props.label.replace(' ','-').toLowerCase()
 
     return(
@@ -14,9 +14,10 @@ const BaseInput:React.FC<IBaseInputProps> = (props) => {
             <label htmlFor={elId}>{props.label}</label>
             <input id={elId} type="text" value={props.value}
                    onChange={props.onChange}
+                   ref={ref}
             />
         </>
     )
-}
+})
 
 export default BaseInput

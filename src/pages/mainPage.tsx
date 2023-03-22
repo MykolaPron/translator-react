@@ -1,30 +1,42 @@
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useRef, useState} from "react";
 import {translationTable, TTranslationTable} from "../services/StorageService/translationTable";
 import {debounce, isLatinString} from "../shared/utills";
+import Modal from "../components/Modal";
+import TranslationInputs, {initialData} from "../components/TranslationInputs";
+import GroupSelect from "../components/GroupSelect";
+import {translationToGroupTable} from "../services/StorageService/translationToGroupTable";
+import {TranslationToGroupModel} from "../shared/models/GroupModel";
 
 const MainPage = () => {
+    const translationRef = useRef<HTMLDivElement>(null)
+    const [translation, setTranslation] = useState(initialData)
+
     const [searchInTranslation, setSearchInTranslation] = useState('')
     const [list, setList] = useState<TTranslationTable[]>([])
 
     const [isLatin, setIsLatin] = useState(true)
     const [disabledAdd, setDisabledAdd] = useState(true)
+    const [open, setOpen] = useState(false)
+    const [groups, setGroups] = useState<number[]>([])
 
     const findTranslation = (str: string) => {
-        const search = str.trim().toLowerCase()
+        const allowedSymbols = new RegExp('[^a-zA-Z0-9А-ЩЬЮЯҐЄІЇа-щьюяґєії,:;\\-.?!\'\"\`\/ ]', 'g')
+        const search = str.trim().toLowerCase().replace(allowedSymbols, "");
 
         const temp = translationTable.getAll({
             query: ({source, translation}: TTranslationTable) => {
                 const sourceMod = source.trim().toLowerCase()
                 const translationMod = translation.trim().toLowerCase()
 
-                return (search !== '')
+                return (search !== '' && search !== '/')
                     && ((sourceMod === search) || ((new RegExp(search)).test(sourceMod))
                         || (translationMod === search) || ((new RegExp(search)).test(translationMod))
                     )
             }
         })
         setList(temp)
-        setDisabledAdd(!!temp.length)
+
+        setDisabledAdd(search.length < 2 || temp.some(e => e.source === search))
     }
 
     const findTranslationDeb = useCallback(debounce(findTranslation, 200), [])
@@ -34,7 +46,7 @@ const MainPage = () => {
     const ukLabel = !isLatin ? selectedLangStyle : {}
 
     const getContent = (str: string) => {
-        const doc = `<span style="color: red!important;">${searchInTranslation}</span>`
+        const doc = `<span style="color: red;text-decoration: underline;">${searchInTranslation}</span>`
 
         if (searchInTranslation === '') {
             return str
@@ -47,9 +59,54 @@ const MainPage = () => {
         }
     }
 
+    const openModal = () => {
+        setTranslation(prevState => {
+            const key = isLatin ? 'source' : 'translation'
+            return {...prevState, [key]: searchInTranslation}
+        })
+        setOpen(true)
+    }
+
+    const submitModalHandler = () => {
+        const isConfirmed = confirm(`Are you sure you want to create record?`)
+        if (!isConfirmed) return;
+
+        const translationId = translationTable.add(translation)
+        if(groups.length){
+            groups.forEach(groupId => {
+                translationToGroupTable.add<TranslationToGroupModel>({groupId, translationId})
+            })
+        }
+
+        setTranslation(initialData)
+        setOpen(false)
+        setSearchInTranslation('')
+        setList([])
+        translationRef.current && translationRef.current.focus()
+    }
+
+    const groupChangeHandler = (groupIds: number[]) => {
+        // console.log(groupIds)
+        setGroups(groupIds)
+    }
     return (
         <div>
             <h2>Main Page</h2>
+            <Modal
+                open={open}
+                onClose={() => {
+                    setTranslation(initialData)
+                    setOpen(false)
+                }}
+            >
+                <GroupSelect onChange={groupChangeHandler}/>
+                <TranslationInputs
+                    initialState={translation}
+                    onChange={(data) => {
+                        setTranslation(data)
+                    }}/>
+                <button onClick={submitModalHandler}>Submit</button>
+            </Modal>
             <div>
                 <label>
                     Search in translation
@@ -61,13 +118,20 @@ const MainPage = () => {
                         onChange={(e) => {
                             setIsLatin(isLatinString(e.target.value))
                             setSearchInTranslation(e.target.value)
+                            findTranslationDeb(e.target.value)
                         }}
-                        onKeyUp={() => {
-                            findTranslationDeb(searchInTranslation)
+                        onKeyUp={(e) => {
+                            if (e.key === 'Enter') {
+                                openModal()
+                            }
                         }}
                     />
-                    <button disabled={disabledAdd}>Add</button>
+                    <button disabled={disabledAdd} onClick={() => {
+                        openModal()
+                    }}>Add
+                    </button>
                 </label>
+                <div ref={translationRef}></div>
                 <ul>
                     {[...list].reverse().map(({ID, source, transcription, translation}) =>
                         <li key={ID}>
