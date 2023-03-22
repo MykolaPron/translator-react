@@ -8,6 +8,7 @@ import GroupPage from "../../pages/groupPage";
 import GroupViewPage from "../../pages/groupViewPage";
 import SettingsPage from "../../pages/settingsPage";
 import TestPage from "../../pages/testPage";
+import MainPage from "../../pages/mainPage";
 
 function App() {
     return (
@@ -15,7 +16,7 @@ function App() {
             <Header/>
             <Routes>
                 <Route path={ERoute.Main}>
-                    <Route index element={<div>Main Page</div>}/>
+                    <Route index element={<MainPage/>}/>
                     <Route path={ERoute.Translation} element={<TranslationListPage/>}/>
 
                     <Route path={ERoute.Group}>

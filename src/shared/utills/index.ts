@@ -18,3 +18,28 @@ export function fileSaver({content, filename, contentType}: TFileSaverProps) {
     a.download = filename;
     a.click();
 }
+
+export function debounce<F extends Function>(cb: F, delay = 250) {
+    let timeout: NodeJS.Timeout
+
+    return <A>(...args: A[]) => {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => {
+            cb(...args)
+        }, delay)
+    }
+}
+
+export function throttle<F extends Function>(cb: F, delay = 250) {
+    let shouldWait = false
+
+    return  <A>(...args: A[]) => {
+        if (shouldWait) return
+
+        cb(...args)
+        shouldWait = true
+        setTimeout(() => {
+            shouldWait = false
+        }, delay)
+    }
+}
