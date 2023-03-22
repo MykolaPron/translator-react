@@ -7,6 +7,7 @@ const MainPage = () => {
     const [list, setList] = useState<TTranslationTable[]>([])
 
     const [isLatin, setIsLatin] = useState(true)
+    const [disabledAdd, setDisabledAdd] = useState(true)
 
     const findTranslation = (str: string) => {
         const search = str.trim().toLowerCase()
@@ -23,6 +24,7 @@ const MainPage = () => {
             }
         })
         setList(temp)
+        setDisabledAdd(!!temp.length)
     }
 
     const findTranslationDeb = useCallback(debounce(findTranslation, 200), [])
@@ -32,7 +34,7 @@ const MainPage = () => {
     const ukLabel = !isLatin ? selectedLangStyle : {}
 
     const getContent = (str: string) => {
-        const doc = `<b style="color: red;">${searchInTranslation}</b>`
+        const doc = `<span style="color: red!important;">${searchInTranslation}</span>`
 
         if (searchInTranslation === '') {
             return str
@@ -64,6 +66,7 @@ const MainPage = () => {
                             findTranslationDeb(searchInTranslation)
                         }}
                     />
+                    <button disabled={disabledAdd}>Add</button>
                 </label>
                 <ul>
                     {[...list].reverse().map(({ID, source, transcription, translation}) =>
