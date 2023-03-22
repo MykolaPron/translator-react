@@ -77,12 +77,13 @@ const GroupPage = () => {
                         }}/>
                     </label>
                     <label>Description
-                        <textarea onChange={(e) => {
-                            setGroup(prevState => ({...prevState, description: e.target.value}))
-                        }}>
-                            {group.description}
+                        <textarea
+                            value={group.description}
+                            onChange={(e) => {
+                                setGroup(prevState => ({...prevState, description: e.target.value}))
+                            }}
+                        >
                         </textarea>
-
                     </label>
                 </div>
                 <button onClick={submitFormHandle}>Submit</button>
@@ -94,12 +95,12 @@ const GroupPage = () => {
                         // style={{display: 'flex', gap: '1rem'}}
                     >
                         <div>
-                        {e.name}
-                        <Link to={`${e.ID}/view`}>
-                            <button>View</button>
-                        </Link>
-                        <button onClick={editHandle(e.ID)}>Edit</button>
-                        <button onClick={deleteHandle(e.ID)}>Delete</button>
+                            {e.name}
+                            <Link to={`${e.ID}/view`}>
+                                <button>View</button>
+                            </Link>
+                            <button onClick={editHandle(e.ID)}>Edit</button>
+                            <button onClick={deleteHandle(e.ID)}>Delete</button>
                         </div>
                         <div>{e.description}</div>
                     </li>)
