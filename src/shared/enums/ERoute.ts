@@ -4,4 +4,5 @@ export enum ERoute {
     Translation = 'translation',
     Group = 'group',
     Test = 'test',
+    TestForGroups = 'testForGroups',
 }

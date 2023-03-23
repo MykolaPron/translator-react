@@ -6,6 +6,7 @@ import TranslationInputs, {initialData} from "../components/TranslationInputs";
 import GroupSelect from "../components/GroupSelect";
 import {translationToGroupTable} from "../services/StorageService/translationToGroupTable";
 import {TranslationToGroupModel} from "../shared/models/GroupModel";
+import {TGroupTable} from "../services/StorageService/groupTable";
 
 const MainPage = () => {
     const translationRef = useRef<HTMLDivElement>(null)
@@ -17,7 +18,7 @@ const MainPage = () => {
     const [isLatin, setIsLatin] = useState(true)
     const [disabledAdd, setDisabledAdd] = useState(true)
     const [open, setOpen] = useState(false)
-    const [groups, setGroups] = useState<number[]>([])
+    const [groups, setGroups] = useState<TGroupTable[]>([])
 
     const findTranslation = (str: string) => {
         const allowedSymbols = new RegExp('[^a-zA-Z0-9А-ЩЬЮЯҐЄІЇа-щьюяґєії,:;\\-.?!\'\"\`\/ ]', 'g')
@@ -73,8 +74,8 @@ const MainPage = () => {
 
         const translationId = translationTable.add(translation)
         if(groups.length){
-            groups.forEach(groupId => {
-                translationToGroupTable.add<TranslationToGroupModel>({groupId, translationId})
+            groups.forEach(group => {
+                translationToGroupTable.add<TranslationToGroupModel>({groupId: group.ID, translationId})
             })
         }
 
@@ -85,7 +86,7 @@ const MainPage = () => {
         translationRef.current && translationRef.current.focus()
     }
 
-    const groupChangeHandler = (groupIds: number[]) => {
+    const groupChangeHandler = (groupIds: TGroupTable[]) => {
         // console.log(groupIds)
         setGroups(groupIds)
     }

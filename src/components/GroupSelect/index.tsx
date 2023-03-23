@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {groupTable, TGroupTable} from "../../services/StorageService/groupTable";
 
 interface IGroupSelectProps {
-    onChange?: (groupIds: number[]) => void
+    onChange?: (groups: TGroupTable[]) => void
 }
 
 const GroupSelect: React.FC<IGroupSelectProps> = (props) => {
@@ -21,13 +21,16 @@ const GroupSelect: React.FC<IGroupSelectProps> = (props) => {
         setSelected(selectedIds)
 
         if(props.onChange){
-            props.onChange(selectedIds.filter(e=>e !== '').map(e=> +e))
+            const groups = list.filter(e=> selectedIds.includes(`${e.ID}`))
+
+            props.onChange(groups)
         }
     }
 
     return (
         <div>
             <label>
+                Group
                 <select
                     multiple
                     value={selected}
