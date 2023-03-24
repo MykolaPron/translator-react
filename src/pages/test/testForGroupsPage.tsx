@@ -1,43 +1,43 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
 import {ERoute} from "../../shared/enums/ERoute";
 import {groupTable, TGroupTable} from "../../services/StorageService/groupTable";
 import {translationToGroupTable, TTranslationToGroupTable} from "../../services/StorageService/translationToGroupTable";
 import {translationTable, TTranslationTable} from "../../services/StorageService/translationTable";
+import s from "./test.module.css"
 
-type TAnswerData = {
-    translation: TTranslationTable,
+type TQuestionData = {
     correct: number,
     wrong: number
+    translation: TTranslationTable,
 }
 
 const TestForGroupsPage = () => {
     const {groupIds} = useParams();
 
-    const [groups, setGroups] = useState<TGroupTable[]>([])
-    const [translations, setTranslations] = useState<TTranslationTable[]>([])
-    const [answers, setAnswers] = useState<TAnswerData[]>([])
-    const [testQuestion, setTestQuestion] = useState<TTranslationTable | null>(null)
+    const [status, setStatus] = useState(false)
+    const [questions, setQuestions] = useState<TQuestionData[]>([])
+    const [questionIndex, setQuestionIndex] = useState<number>(0)
 
     if (!groupIds) {
         alert('Not Correct groups data...')
         return <Navigate to={ERoute.Main + ERoute.Test} replace={true}/>
     }
-    const groupIdsArr = groupIds.split(',').map(e => +e)
+    const groupIdsArr = useMemo(() => groupIds.split(',').map(e => +e), [groupIds])
+
     if (groupIdsArr.some(e => isNaN(e))) {
         alert('Not Correct groups data...')
-
         return <Navigate to={ERoute.Main + ERoute.Test} replace={true}/>
     }
 
-    useEffect(() => {
-        const groups = groupTable.getAll({
+    const groups = useMemo(() => groupTable.getAll({
             query: (row: TGroupTable) => {
                 return groupIdsArr.includes(row.ID)
             }
         })
-        setGroups(groups)
+        , [groupIds])
 
+    useEffect(() => {
         const translationToGroup = translationToGroupTable.getAll({
             query: (row: TTranslationToGroupTable) => {
                 return groupIdsArr.includes(row.groupId)
@@ -50,7 +50,6 @@ const TestForGroupsPage = () => {
                 return translationsIds.includes(row.ID)
             }
         })
-        setTranslations(translations)
 
         const answers = translations.map((e) => {
             return {
@@ -60,68 +59,103 @@ const TestForGroupsPage = () => {
             }
         })
 
-        setAnswers(answers)
-    }, [groupIds])
+        setQuestions(answers)
+    }, [])
 
-    useEffect(()=>{
-        setTestQuestion(() => {
-            return getRandomTranslation()
+    const setQuestionAnswerHandler = (answer: boolean) => () => {
+        const key = answer ? 'correct' : 'wrong'
+
+        setQuestions(prevState => {
+            return prevState.map((answer, index) => {
+                return index !== questionIndex
+                    ? answer
+                    : {...answer, [key]: answer[key] + 1}
+            })
         })
-    },[translations])
+    }
 
-    function getRandomTranslation(): TTranslationTable {
-        const rand = translations[Math.floor(Math.random() * translations.length)];
-
-        if(testQuestion && rand.ID === testQuestion.ID){
-            return getRandomTranslation()
-        }else{
-            return rand
+    const getNotRepeaterd = (arr: any[]) => {
+        const r = Math.floor(Math.random() * arr.length)
+        if (arr.length > 1 && arr[r] === questionIndex && arr.length > 1) {
+            return getRandomQuestionIndex()
+        } else {
+            return arr[r]
         }
     }
 
-    const setQuestionAnswerHandler = (answer: boolean) =>()=>{
-        if(!testQuestion) return;
+    const getRandomQuestionIndex = (): number => {
+        if (!questions.length) return 0
 
-        const key = answer ? 'correct' : 'wrong'
-        setAnswers(prevState => {
-            return prevState.map(answer => {
-                return answer.translation.ID !== testQuestion.ID
-                    ? answer
-                    : {...answer, [key]:answer[key] + 1}
-            })
-        })
-        setTestQuestion(() => {
-            return getRandomTranslation()
-        })
+        const notUsed = questions.reduce<number[]>((a, e, i) => (!e.correct && !e.wrong ? [...a, i] : [...a]), [])
+        if (notUsed.length) {
+            const r = Math.floor(Math.random() * notUsed.length)
+            return notUsed[r]
+        }
+        const hasMistakes = questions.reduce<number[]>((a, e, i) => (e.correct < e.wrong ? [...a, i] : [...a]), [])
+
+        if (hasMistakes.length) return getNotRepeaterd(hasMistakes)
+
+        setStatus(true)
+
+        return getNotRepeaterd(questions.map((e, i) => i))
+    }
+    useEffect(() => {
+        setQuestionIndex(getRandomQuestionIndex())
+    }, [questions])
+
+    const answersCount = {
+        correct: questions.reduce((a, e) => a + e.correct, 0),
+        wrong: questions.reduce((a, e) => a + e.wrong, 0),
+        get total() {
+            return this.correct + this.wrong
+        }
     }
 
     return (
-        <div>
-            <h2>Test For Group Page</h2>
+        <div className={s.container}>
             <div>
-                Test for words in groups: {groups.map(e => e.name).join(', ')}.
-            </div>
-            {!testQuestion ? '' : <div>
-                <div>{testQuestion.source} - [{testQuestion.transcription}] - {testQuestion.translation}</div>
+                <h2>Test For Group Page</h2>
                 <div>
-                    <button onClick={setQuestionAnswerHandler(true)}>Good</button>
-                    <button onClick={setQuestionAnswerHandler(false)}>Bad</button>
+                    Test for words in groups: {groups.map(e => e.name).join(', ')}.
                 </div>
-            </div>}
+                <div>
+                    {status && <div style={{color: 'green'}}>Complete!</div>}
+                    Answers Count : {answersCount.total}
+                    {answersCount.total ? `(${answersCount.correct}/${answersCount.wrong})` : ''}
+                </div>
+                <br/>
+                {
+                    questions.length ? <div>
+                        <div>
+                            <div>{questions[questionIndex].translation.source}</div>
+                            <div>{questions[questionIndex].translation.transcription}</div>
+                            <div>{questions[questionIndex].translation.translation}</div>
+                        </div>
+                        <div>
+                            <button onClick={setQuestionAnswerHandler(true)}>Good</button>
+                            <button onClick={setQuestionAnswerHandler(false)}>Bad</button>
+                        </div>
+                    </div> : ''
+                }
+            </div>
             <div>
                 <ul>
-                    {answers.map(({translation, correct, wrong})=> <li key={translation.ID}>
-                        <div>
-                            Total(Good/Bad): {correct + wrong} ({correct}/{wrong})
-                        </div>
-                        <div>{translation.source} - [{translation.transcription}] - {translation.translation}</div>
+                    {questions.map(({translation, correct, wrong}, index) => <li key={translation.ID}>
+                        <span style={{
+                            marginRight: '1rem',
+                            color: questionIndex === index ? 'red' : ''
+                        }}>
+                           ({correct}/{wrong})
+                        </span>
+                        <span>
+                            {translation.source} -
+                            [{translation.transcription}] - {translation.translation}
+                        </span>
                     </li>)}
                 </ul>
             </div>
-
         </div>
     )
 }
-
 
 export default TestForGroupsPage
