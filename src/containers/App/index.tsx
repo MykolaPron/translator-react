@@ -28,8 +28,8 @@ function App() {
                     {/*<Route path={ERoute.Test} element={<TestPage/>}/>*/}
                     <Route path={ERoute.Test}>
                         <Route index element={<TestPage/>}/>
-                        <Route path={ERoute.TestForGroups + "/:groupIds"} element={<TestForGroupsPage/>}/>
-                        <Route path={ERoute.TestForGroups + "/*"} element={<TestForGroupsPage/>}/>
+                        <Route path={ERoute.TestForGroups} element={<TestForGroupsPage/>}/>
+                        {/*<Route path={ERoute.TestForGroups + "/*"} element={<TestForGroupsPage/>}/>*/}
                     </Route>
                 </Route>
             </Routes>
